@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { testApiKey } from '../lib/claude.js'
 
 export default function SettingsModal({ settings, onSave, onClose }) {
   const [form, setForm] = useState({
@@ -6,9 +7,25 @@ export default function SettingsModal({ settings, onSave, onClose }) {
     supabaseUrl: settings.supabaseUrl || '',
     supabaseAnonKey: settings.supabaseAnonKey || '',
   })
+  const [testResult, setTestResult] = useState(null)
+  const [testing, setTesting] = useState(false)
 
   function handleChange(e) {
+    setTestResult(null)
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  async function handleTest() {
+    setTesting(true)
+    setTestResult(null)
+    try {
+      const { status, body } = await testApiKey(form.claudeApiKey.trim())
+      setTestResult({ status, body })
+    } catch (err) {
+      setTestResult({ status: 'network error', body: err.message })
+    } finally {
+      setTesting(false)
+    }
   }
 
   function handleSubmit(e) {
@@ -47,6 +64,21 @@ export default function SettingsModal({ settings, onSave, onClose }) {
               placeholder="sk-ant-..."
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
+            <div className="flex items-center gap-3 mt-2">
+              <button
+                type="button"
+                onClick={handleTest}
+                disabled={!form.claudeApiKey.trim() || testing}
+                className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+              >
+                {testing ? 'Testing…' : 'Test Key'}
+              </button>
+              {testResult && (
+                <span className={`text-xs font-medium ${testResult.status === 200 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  HTTP {testResult.status} — {testResult.status === 200 ? 'Key is valid!' : testResult.body}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-gray-500 mt-1">
               Stored in your browser only. Never sent to any server.
             </p>

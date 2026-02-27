@@ -23,7 +23,34 @@ Quality guide:
 - Average: correct but vague or obvious
 - Weak: generic, misleading, or lacks substance`
 
+function logKeyMeta(key) {
+  if (!key) { console.error('[Claude] API key is empty/null'); return }
+  console.log(`[Claude] Key meta — length: ${key.length}, prefix: "${key.slice(0, 20)}...", suffix: "...${key.slice(-6)}"`)
+}
+
+export async function testApiKey(claudeApiKey) {
+  logKeyMeta(claudeApiKey)
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': claudeApiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 10,
+      messages: [{ role: 'user', content: 'Hi' }],
+    }),
+  })
+  const body = await response.text()
+  console.log(`[Claude] Test response — status: ${response.status}, body: ${body}`)
+  return { status: response.status, body }
+}
+
 export async function analyzeTip(content, entryType, claudeApiKey) {
+  logKeyMeta(claudeApiKey)
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -46,12 +73,16 @@ export async function analyzeTip(content, entryType, claudeApiKey) {
   })
 
   if (response.status === 401) {
+    const body = await response.text()
+    console.error('[Claude] 401 body:', body)
     throw new Error('CLAUDE_401')
   }
   if (response.status === 429) {
     throw new Error('CLAUDE_429')
   }
   if (!response.ok) {
+    const body = await response.text()
+    console.error('[Claude] API error:', response.status, response.statusText, body)
     throw new Error('CLAUDE_ERROR')
   }
 
@@ -61,6 +92,7 @@ export async function analyzeTip(content, entryType, claudeApiKey) {
   try {
     return JSON.parse(text)
   } catch {
+    console.error('[Claude] Invalid JSON in response. Raw text:', text)
     throw new Error('CLAUDE_BAD_JSON')
   }
 }

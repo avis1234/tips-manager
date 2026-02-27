@@ -87,12 +87,13 @@ export async function analyzeTip(content, entryType, claudeApiKey) {
   }
 
   const data = await response.json()
-  const text = data.content[0].text.trim()
+  const raw = data.content[0].text.trim()
+  const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
 
   try {
     return JSON.parse(text)
   } catch {
-    console.error('[Claude] Invalid JSON in response. Raw text:', text)
+    console.error('[Claude] Invalid JSON in response. Raw text:', raw)
     throw new Error('CLAUDE_BAD_JSON')
   }
 }

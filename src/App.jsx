@@ -33,7 +33,6 @@ export default function App() {
 
   const handleAddTip = useCallback(
     async ({ rawInput, entryType }) => {
-      setProcessingStatus('fetching')
       try {
         await processTip({
           rawInput,

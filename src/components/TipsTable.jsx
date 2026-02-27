@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import TipsTableRow from './TipsTableRow.jsx'
 import EmptyState from './EmptyState.jsx'
+import TipDetailModal from './TipDetailModal.jsx'
 
 const COLUMNS = [
   { key: 'tool_name', label: 'Tool' },
@@ -25,6 +26,7 @@ function sortTips(tips, sortKey, sortDir) {
 export default function TipsTable({ tips, loading, isConfigured, onDelete }) {
   const [sortKey, setSortKey] = useState('date_entered')
   const [sortDir, setSortDir] = useState('desc')
+  const [expanded, setExpanded] = useState(null)
 
   function handleSort(key) {
     if (key === '_actions') return
@@ -74,10 +76,22 @@ export default function TipsTable({ tips, loading, isConfigured, onDelete }) {
         </thead>
         <tbody className="bg-white">
           {sorted.map((tip) => (
-            <TipsTableRow key={tip.id} tip={tip} onDelete={onDelete} />
+            <TipsTableRow
+              key={tip.id}
+              tip={tip}
+              onDelete={onDelete}
+              onExpand={(title, text) => setExpanded({ title, text })}
+            />
           ))}
         </tbody>
       </table>
+      {expanded && (
+        <TipDetailModal
+          title={expanded.title}
+          text={expanded.text}
+          onClose={() => setExpanded(null)}
+        />
+      )}
     </div>
   )
 }

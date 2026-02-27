@@ -13,7 +13,11 @@ export default function SettingsModal({ settings, onSave, onClose }) {
 
   function handleSubmit(e) {
     e.preventDefault()
-    onSave(form)
+    onSave({
+      claudeApiKey: form.claudeApiKey.trim(),
+      supabaseUrl: form.supabaseUrl.trim(),
+      supabaseAnonKey: form.supabaseAnonKey.trim(),
+    })
     onClose()
   }
 

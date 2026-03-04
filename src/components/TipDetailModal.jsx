@@ -1,13 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export default function TipDetailModal({ title, text, onClose }) {
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
   useEffect(() => {
     function onKey(e) {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') onCloseRef.current()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [])
 
   return (
     <div

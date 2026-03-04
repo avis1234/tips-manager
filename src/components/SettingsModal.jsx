@@ -22,7 +22,7 @@ export default function SettingsModal({ settings, onSave, onClose }) {
       const { status, body } = await testApiKey(form.claudeApiKey.trim())
       setTestResult({ status, body })
     } catch (err) {
-      setTestResult({ status: 'network error', body: err.message })
+      setTestResult({ status: null, body: err.message })
     } finally {
       setTesting(false)
     }
@@ -75,7 +75,11 @@ export default function SettingsModal({ settings, onSave, onClose }) {
               </button>
               {testResult && (
                 <span className={`text-xs font-medium ${testResult.status === 200 ? 'text-emerald-600' : 'text-red-600'}`}>
-                  HTTP {testResult.status} — {testResult.status === 200 ? 'Key is valid!' : testResult.body}
+                  {testResult.status === 200
+                    ? 'HTTP 200 — Key is valid!'
+                    : testResult.status
+                    ? `HTTP ${testResult.status} — ${testResult.body}`
+                    : `Network error — ${testResult.body}`}
                 </span>
               )}
             </div>
